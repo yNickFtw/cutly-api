@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String         @id @default(uuid())
+  name           String
+  email          String         @unique
+  profilePicture String?
+  password       String?
+  phone          String?
+  company        Company[]
+  collaborator   Collaborator[]
+  customerId     String?
+  planId         String?
+  plan           Plan?          @relation(fields: [planId], references: [id])
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @default(now()) @updatedAt
+}
+
+model Company {
+  id           String         @id @default(uuid())
+  name         String?
+  email        String?
+  password     String?
+  logo         String?
+  description  String?
+  slug         String         @unique
+  website      String?
+  ownerId      String
+  owner        User           @relation(fields: [ownerId], references: [id])
+  collaborator Collaborator[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @default(now()) @updatedAt
+}
+
+model Collaborator {
+  id           String     @id @default(uuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  companyId    String
+  company      Company    @relation(fields: [companyId], references: [id])
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now()) @updatedAt
+}
+
+model Permission {
+  id           String         @id @default(uuid())
+  name         String
+  description  String
+  collaborator Collaborator[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @default(now()) @updatedAt
+}
+
+model Link {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  url         String
+  fields      Field[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+}
+
+model Field {
+  id          String       @id @default(uuid())
+  placeholder String
+  description String
+  type        String
+  required    Boolean
+  linkId      String
+  link        Link         @relation(fields: [linkId], references: [id])
+  fieldValues FieldValue[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt
+}
+
+model FieldValue {
+  id        String   @id @default(uuid())
+  value     String
+  fieldId   String
+  field     Field    @relation(fields: [fieldId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Plan {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  User        User[]
+}
